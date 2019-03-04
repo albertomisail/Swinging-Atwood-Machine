@@ -1,41 +1,53 @@
-let M = 8;
-let m = 3;
+// constants
+let M = 3;
+let m = 1;
 let g = 9.81;
 let b = 0;
 
+// variables
 let r = 200;
 let v_r = 0;
 let theta = 0;
 let v_theta = 0;
-
 let dt = 0.00001;
 
 let iter_frame = 50000;
 
+let x, y;
 let px = -1;
 let py = -1;
 let cx, cy;
-
 let buffer;
-
-let counter = 0;
+let update = true;
 
 // sliders
 let g_slider;
 let m_slider;
 let M_slider;
+let b_slider;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  //Issue with wrong rendering on a retina Mac. See issue: https://github.com/CodingTrain/website/issues/574
+  createCanvas(800, 600);
   pixelDensity(1);
   theta = PI / 2;
-  cx = windowWidth / 2;
-  cy = windowHeight / 3;
-  buffer = createGraphics(windowWidth, windowHeight);
+  cx = width / 2;
+  cy = height / 3;
+  buffer = createGraphics(width, height);
   buffer.background(175);
   buffer.translate(cx, cy);
+  setupSliders();
+  // let stop = createButton("stop");
+  // stop.mousePressed(stopSketch);
+}
 
+function stopSketch(){
+  px = -1;
+  py = -1;
+  update = false;
+  draw();
+}
+
+function setupSliders(){
   g_slider = createSlider(0, 20, g, 0.1);
 	g_slider.position(15, 15);
 	m_slider = createSlider(0, 10, m);
@@ -49,8 +61,29 @@ function setup() {
 function draw() {
   background(175);
   imageMode(CORNER);
-  image(buffer, 0, 0, windowWidth, windowHeight);
+  image(buffer, 0, 0, width, height);
 
+  drawSliders();
+  // console.log(width);
+  translate(cx, cy);
+	stroke(0);
+	strokeWeight(2);
+
+	x = r * sin(theta);
+	y = r * cos(theta);
+
+	line(0, 0, x, y);
+	fill(0);
+	ellipse(x, y, m * 10, m * 10);
+
+  // if(update === true){
+  if(true){
+    calculateNewPosition();
+    drawTransition();
+  }
+}
+
+function drawSliders(){
   M = M_slider.value();
 	m = m_slider.value();
 	g = g_slider.value();
@@ -63,19 +96,10 @@ function draw() {
 	text("M: "+ M, (M_slider.x + M_slider.width + 15), (M_slider.y + (M_slider.height / 2) + (text_size / 2)));
 	text("gravity: "+ g, (g_slider.x + g_slider.width + 15), (g_slider.y + (g_slider.height / 2) + (text_size / 2)));
   text("damping: "+ b, (b_slider.x + b_slider.width + 15), (b_slider.y + (b_slider.height / 2) + (text_size / 2)));
+}
 
-	translate(cx, cy);
-	stroke(0);
-	strokeWeight(2);
-
-	let x = r * sin(theta);
-	let y = r * cos(theta);
-
-	line(0, 0, x, y);
-	fill(0);
-	ellipse(x, y, m, m);
-
-	for(let i = 0; i < iter_frame; i++){
+function calculateNewPosition(){
+  for(let i = 0; i < iter_frame; i++){
 		let num1 = - m * g * r * sin(theta);
 		let num2 = - m * v_theta * 2 * r * v_r;
     let drag_term = -b * r * v_theta;
@@ -93,15 +117,24 @@ function draw() {
 		v_r += a_r * dt;
 		r += v_r * dt;
 	}
+}
 
+function drawTransition(){
   buffer.stroke(0);
-  if (frameCount > 1) {
+  if (px !== -1 && py !== -1) {
     buffer.line(px, py, x, y);
   }
-
   px = x;
   py = y;
-	counter++;
-
-	console.log(counter);
 }
+
+// function mousePressed(){
+//   if(update === false){
+//     v_r = 0;
+//     v_theta = 0;
+//     r = dist(cx, cy, mouseX, mouseY);
+//     theta = atan2(mouseX - cx, mouseY - cy);
+//   }
+//
+//   return false;
+// }
