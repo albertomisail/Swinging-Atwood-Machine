@@ -3,22 +3,24 @@ let M = 3;
 let m = 1;
 let g = 9.81;
 let b = 0;
+let dt = 0.00001;
 
 // variables
 let r = 200;
-let v_r = 0;
 let theta = 0;
-let v_theta = 0;
-let dt = 0.00001;
+let phi = 0;
+let p_r = 0;
+let p_theta = 0;
+let p_phi = 1;
 
-let iter_frame = 50000;
+let c = [];
+let d = [];
+let e = [];
+let f = [];
 
-let x, y;
-let px = -1;
-let py = -1;
-let cx, cy;
-let buffer;
-let update = true;
+let iter_frame = 5000;
+
+let x, y, z;
 
 // sliders
 let g_slider;
@@ -71,8 +73,6 @@ function setup() {
   createCanvas(800, 600, WEBGL);
   pixelDensity(1);
   theta = PI / 2;
-  cx = width / 2;
-  cy = height / 3;
 
   pg = createGraphics(800, 600);
 
@@ -81,8 +81,6 @@ function setup() {
   cam_right = createVector(1, 0, 0);
 
   setupSliders();
-  // let stop = createButton("stop");
-  // stop.mousePressed(stopSketch);
 }
 
 function positionCamera(){
@@ -112,13 +110,6 @@ function positionCamera(){
   }
 }
 
-function stopSketch(){
-  px = -1;
-  py = -1;
-  update = false;
-  draw();
-}
-
 function setupSliders(){
   g_slider = createSlider(0, 20, g, 0.1);
   g_slider.position(15, 15);
@@ -140,28 +131,26 @@ function setupSliders(){
   sliderY = b_slider.y + b_slider.height+10;
 }
 
+let counter = 0;
 function draw() {
+  if(counter < 125){
   background(175);
 
   drawSliders();
-  // console.log(width);
 	stroke(0);
 	strokeWeight(2);
 
-	x = r * sin(theta);
-	y = r * cos(theta);
+	x = r * sin(theta) * cos(phi);
+	y = r * cos(theta) * cos(phi);
+  z = r * sin(phi);
+
+  console.log(counter + " " + x + " " + z + " " + (-y));
 
   positionCamera();
 
-	line(0, 0, x, y);
-	fill(0);
-	ellipse(x, y, m * 10, m * 10);
-
-  // if(update === true){
-  if(true){
-    calculateNewPosition();
-    drawTransition();
-  }
+  calculateNewPosition();
+  drawTransition();
+  counter++;}
 }
 
 function drawSliders(){
@@ -176,38 +165,57 @@ function drawSliders(){
 }
 
 function calculateNewPosition(){
+  let aux = phi;
   for(let i = 0; i < iter_frame; i++){
-		let num1 = - m * g * r * sin(theta);
-		let num2 = - m * v_theta * 2 * r * v_r;
-    let drag_term = -b * r * v_theta;
-    let den = m * r * r;
-    let a_theta = (num1 + num2 + drag_term) / den;
+    // Calculate coefficients
+    let c0 = dt * p_r / (M + m);
+    let d0 = dt * p_theta / (m * r * r);
+    let e0 = dt * (p_theta * p_theta / (m * r * r * r) - M * g + m * g * cos(theta) + p_phi * p_phi / (m * r * r * r * sin(theta) * sin(theta)));
+    let f0 = dt * (- m * g * r * sin(theta) + p_phi * p_phi * cos(theta) / (m * r * r * sin(theta) * sin(theta) * sin(theta)));
+    let g0 = dt * (p_phi / (m * r * r * sin(theta) * sin(theta)));
+    let h0 = 0;
 
-    num1 = - M * g + m * g * cos(theta);
-    num2 = m * r * v_theta * v_theta;
-    drag_term = -b * v_r;
-    den = M + m;
-    let a_r = (num1 + num2 + drag_term) / den;
+    let c1 = dt * (p_r + e0 / 2) / (M + m);
+    let d1 = dt * (p_theta + f0 / 2) / (m * (r + c0 / 2) * (r + c0 / 2));
+    let e1 = dt * ((p_theta + f0 / 2) * (p_theta + f0 / 2) / (m * (r + c0 / 2) * (r + c0 / 2) * (r + c0 / 2)) - M * g + m * g * cos(theta + d0 / 2) + (p_phi + h0 / 2) * (p_phi + h0 / 2) / (m * (r + c0 / 2) * (r + c0 / 2) * (r + c0 / 2) * sin(theta + d0 / 2) * sin(theta + d0 / 2)));
+    let f1 = dt * (- m * g * (r + c0 / 2) * sin(theta + d0 / 2) + (p_phi + h0 / 2) * (p_phi + h0 / 2) * cos(theta + d0 / 2) / (m * (r + c0 / 2) * (r + c0 / 2) * sin(theta + d0 / 2) * sin(theta + d0 / 2) * sin(theta + d0 / 2)));
+    let g1 = dt * ((p_phi + h0 / 2) / (m * (r + c0 / 2) * (r + c0 / 2) * sin(theta + d0 / 2) * sin(theta + d0 / 2)));
+    let h1 = 0;
 
-    v_theta += a_theta * dt;
-    theta += v_theta * dt;
-    v_r += a_r * dt;
-    r += v_r * dt;
+    let c2 = dt * (p_r + e1 / 2) / (M + m);
+    let d2 = dt * (p_theta + f1 / 2) / (m * (r + c1 / 2) * (r + c1 / 2));
+    let e2 = dt * ((p_theta + f1 / 2) * (p_theta + f1 / 2) / (m * (r + c1 / 2) * (r + c1 / 2) * (r + c1 / 2)) - M * g + m * g * cos(theta + d1 / 2) + (p_phi + h1 / 2) * (p_phi + h1 / 2) / (m * (r + c1 / 2) * (r + c1 / 2) * (r + c1 / 2) * sin(theta + d1 / 2) * sin(theta + d1 / 2)));
+    let f2 = dt * (- m * g * (r + c1 / 2) * sin(theta + d1 / 2) + (p_phi + h1 / 2) * (p_phi + h1 / 2) * cos(theta + d1 / 2) / (m * (r + c1 / 2) * (r + c1 / 2) * sin(theta + d1 / 2) * sin(theta + d1 / 2) * sin(theta + d1 / 2)));
+    let g2 = dt * ((p_phi + h1 / 2) / (m * (r + c1 / 2) * (r + c1 / 2) * sin(theta + d1 / 2) * sin(theta + d1 / 2)));;
+    let h2 = 0;
+
+    let c3 = dt * (p_r + e2 / 2) / (M + m);
+    let d3 = dt * (p_theta + f2 / 2) / (m * (r + c2 / 2) * (r + c2 / 2));
+    let e3 = dt * ((p_theta + f2 / 2) * (p_theta + f2 / 2) / (m * (r + c2 / 2) * (r + c2 / 2) * (r + c2 / 2)) - M * g + m * g * cos(theta + d2 / 2) + (p_phi + h2 / 2) * (p_phi + h2 / 2) / (m * (r + c2 / 2) * (r + c2 / 2) * (r + c2 / 2) * sin(theta + d2 / 2) * sin(theta + d2 / 2)));
+    let f3 = dt * (- m * g * (r + c2 / 2) * sin(theta + d2 / 2) + (p_phi + h2 / 2) * (p_phi + h2 / 2) * cos(theta + d2 / 2) / (m * (r + c2 / 2) * (r + c2 / 2) * sin(theta + d2 / 2) * sin(theta + d2 / 2) * sin(theta + d2 / 2)));
+    let g3 = dt * ((p_phi + h2 / 2) / (m * (r + c2 / 2) * (r + c2 / 2) * sin(theta + d2 / 2) * sin(theta + d2 / 2)));;
+    let h3 = 0;
+
+    // Runge-Kutta formulas`
+    r += (c0 + 2 * c1 + 2 * c2 + c3) / 6;
+    theta += (d0 + 2 * d1 + 2 * d2 + d3) / 6;
+    // theta %= 2 * PI;
+    p_r += (e0 + 2 * e1 + 2 * e2 + e3) / 6;
+    p_theta += (f0 + 2 * f1 + 2 * f2 + f3) / 6;
+    phi += (g0 + 2 * g1 + 2 * g2 + g3) / 6;
+    // phi %= 2 * PI;
+    p_phi += (h0 + 2 * h1 + 2 * h2 + h3) / 6;
   }
 }
 
 function drawTransition(){
-  //buffer.stroke(0);
   beginShape(POINTS);
   for(let q of prev) {
-    vertex(q[0], q[1]);
+    vertex(q[0], q[1], q[2]);
   }
   endShape();
   if (frameCount > 1) {
-    // buffer.line(px, py, 0, x, y, 0);
-    prev.push([x,y]);
-    if(prev.length > 1000) prev.shift();
+    prev.push([x,y,z]);
+    if(prev.length > 10000) prev.shift();
   }
-  px = x;
-  py = y;
 }
