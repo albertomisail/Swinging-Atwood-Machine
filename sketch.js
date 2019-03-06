@@ -59,11 +59,25 @@ class Rotation {
   }
   rotate(vec)
   {
-    let ans = createVector();
-    ans.x = this.a*vec.x+this.b*vec.y+this.c*vec.z;
-    ans.y = this.d*vec.x+this.e*vec.y+this.f*vec.z;
-    ans.z = this.g*vec.x+this.h*vec.y+this.i*vec.z;
-    return ans;
+    if(typeof vec.x != 'undefined') {
+      let ans = createVector();
+      ans.x = this.a*vec.x+this.b*vec.y+this.c*vec.z;
+      ans.y = this.d*vec.x+this.e*vec.y+this.f*vec.z;
+      ans.z = this.g*vec.x+this.h*vec.y+this.i*vec.z;
+      return ans;
+    } else {
+      let ans = new Rotation(createVector(), 0);
+      ans.a = this.a*vec.a + this.b*vec.d + this.c*vec.g;
+      ans.b = this.a*vec.b + this.b*vec.e + this.c*vec.h;
+      ans.c = this.a*vec.c + this.b*vec.f + this.c*vec.i;
+      ans.d = this.d*vec.a + this.e*vec.d + this.f*vec.g;
+      ans.e = this.d*vec.b + this.e*vec.e + this.f*vec.h;
+      ans.f = this.d*vec.c + this.e*vec.f + this.f*vec.i;
+      ans.g = this.g*vec.a + this.h*vec.d + this.i*vec.g;
+      ans.h = this.g*vec.b + this.h*vec.e + this.i*vec.h;
+      ans.i = this.g*vec.c + this.h*vec.f + this.i*vec.i;
+      return ans;
+    }
   }
 }
 
@@ -95,14 +109,21 @@ function positionCamera(){
       let dy = mouseY-lastMouseY;
       let alpha = dx/100;
       let beta = dy/100;
-      let rotx = new Rotation(cam_up, -alpha);
-      let roty = new Rotation(cam_right, beta);
+      let rotx = new Rotation(cam_up, -alpha/2);
+      let roty = new Rotation(cam_right, beta/2);
+      let rot = rotx.rotate(roty);
+      rot = rot.rotate(roty);
+      rot = rot.rotate(rotx);
+      cam_up = rot.rotate(cam_up);
+      cam_right = rot.rotate(cam_right);
+      cam_pos = rot.rotate(cam_pos);
+      /*
       cam_up = rotx.rotate(cam_up);
       cam_up = roty.rotate(cam_up);
       cam_right = rotx.rotate(cam_right);
       cam_right = roty.rotate(cam_right);
       cam_pos = rotx.rotate(cam_pos);
-      cam_pos = roty.rotate(cam_pos);
+      cam_pos = roty.rotate(cam_pos); */
     }
     lastMouseX = mouseX;
     lastMouseY = mouseY;
