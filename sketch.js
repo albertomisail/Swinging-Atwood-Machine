@@ -17,6 +17,7 @@ let iter_frame = 50;
 
 let x, y, z;
 
+let update = false;
 
 // sliders
 let g_slider;
@@ -29,13 +30,66 @@ let prev = [];
 
 let cam_pos, cam_up, cam_right;
 
+// buttons, text
 let g_text, m_text, M_text, b_text;
 let text_size = 12;
+let start_button;
 
 let alpha=0, beta=0;
 
 let lastMouseX, lastMouseY, lastMouseP = 0;
 let sliderX, sliderY;
+
+let keyval = 0;
+
+if (!Array.prototype.back){
+  Array.prototype.back = function() {
+    return this[this.length - 1];
+  };
+};
+
+class Queue {
+  constructor() {
+    this.inq = [];
+    this.outq = [];
+  }
+  push(item) {
+    this.inq.push(item)
+  }
+  pre() {
+    if(this.outq.length != 0) {
+      return true;
+    }
+    if(this.outq.length == 0 && this.inq.length != 0) {
+      while(this.inq.length != 0) {
+        this.outq.push(this.inq.pop());
+      }
+      return true;
+    }
+    return false;
+  }
+  front() {
+    if(this.pre()) {
+      return this.outq.back();
+    }
+    return null;
+  }
+  pop() {
+    if(this.pre()) {
+      return this.outq.pop();
+    }
+    return null;
+  }
+  size() {
+    return this.outq.length + this.inq.length;
+  }
+  clear() {
+    this.outq = [];
+    this.inq = [];
+  }
+}
+
+let key_queue;
 
 class Rotation {
   constructor(axis, angle) {
@@ -58,11 +112,25 @@ class Rotation {
   }
   rotate(vec)
   {
-    let ans = createVector();
-    ans.x = this.a*vec.x+this.b*vec.y+this.c*vec.z;
-    ans.y = this.d*vec.x+this.e*vec.y+this.f*vec.z;
-    ans.z = this.g*vec.x+this.h*vec.y+this.i*vec.z;
-    return ans;
+    if(typeof vec.x != 'undefined') {
+      let ans = createVector();
+      ans.x = this.a*vec.x+this.b*vec.y+this.c*vec.z;
+      ans.y = this.d*vec.x+this.e*vec.y+this.f*vec.z;
+      ans.z = this.g*vec.x+this.h*vec.y+this.i*vec.z;
+      return ans;
+    } else {
+      let ans = new Rotation(createVector(), 0);
+      ans.a = this.a*vec.a + this.b*vec.d + this.c*vec.g;
+      ans.b = this.a*vec.b + this.b*vec.e + this.c*vec.h;
+      ans.c = this.a*vec.c + this.b*vec.f + this.c*vec.i;
+      ans.d = this.d*vec.a + this.e*vec.d + this.f*vec.g;
+      ans.e = this.d*vec.b + this.e*vec.e + this.f*vec.h;
+      ans.f = this.d*vec.c + this.e*vec.f + this.f*vec.i;
+      ans.g = this.g*vec.a + this.h*vec.d + this.i*vec.g;
+      ans.h = this.g*vec.b + this.h*vec.e + this.i*vec.h;
+      ans.i = this.g*vec.c + this.h*vec.f + this.i*vec.i;
+      return ans;
+    }
   }
 }
 
@@ -78,6 +146,8 @@ function setup() {
   cam_up = createVector(0, 1, 0);
   cam_right = createVector(1, 0, 0);
 
+  key_queue = new Queue();
+
   setupSliders();
   // setupInputs();
 }
@@ -92,14 +162,21 @@ function positionCamera(){
       let dy = mouseY-lastMouseY;
       let alpha = dx/100;
       let beta = dy/100;
-      let rotx = new Rotation(cam_up, -alpha);
-      let roty = new Rotation(cam_right, beta);
+      let rotx = new Rotation(cam_up, -alpha/2);
+      let roty = new Rotation(cam_right, beta/2);
+      let rot = rotx.rotate(roty);
+      rot = rot.rotate(roty);
+      rot = rot.rotate(rotx);
+      cam_up = rot.rotate(cam_up);
+      cam_right = rot.rotate(cam_right);
+      cam_pos = rot.rotate(cam_pos);
+      /*
       cam_up = rotx.rotate(cam_up);
       cam_up = roty.rotate(cam_up);
       cam_right = rotx.rotate(cam_right);
       cam_right = roty.rotate(cam_right);
       cam_pos = rotx.rotate(cam_pos);
-      cam_pos = roty.rotate(cam_pos);
+      cam_pos = roty.rotate(cam_pos); */
     }
     lastMouseX = mouseX;
     lastMouseY = mouseY;
@@ -128,6 +205,25 @@ function setupSliders(){
   b_text.position((b_slider.x + b_slider.width + 15), (b_slider.y + (b_slider.height / 2) + (text_size / 2)));
   sliderX = M_slider.x+m_slider.width+100;
   sliderY = b_slider.y + b_slider.height+10;
+
+  key_text = createSpan("");
+  key_text.position(M_slider.x, b_slider.y+20);
+  key_text.html("0");
+
+  start_button = createButton();
+  start_button.position(M_slider.x, b_slider.y+b_slider.height+10);
+  start_button.html("start");
+  start_button.mousePressed(toggleSketch);
+}
+
+function toggleSketch() {
+  if(update) {
+    start_button.html("start");
+    update = false;
+  } else {
+    start_button.html("stop");
+    update = true;
+  }
 }
 
 let counter = 0;
@@ -145,6 +241,7 @@ function draw() {
 
   positionCamera();
 
+  initialPositioning();
   calculateNewPosition();
   drawTransition();
   counter++;}
@@ -214,3 +311,29 @@ function drawTransition(){
     if(prev.length > 1000000) prev.shift();
   }
 }
+
+function initialPositioning() {
+  if(!update) {
+    while(key_queue.size() > 0) {
+      prev = [];
+      key_code = key_queue.pop();
+      switch(key_code) {
+        case 37: r -= 10; break;
+        case 38: theta += 0.1; break;
+        case 39: r += 10; break;
+        case 40: theta -= 0.1; break;
+      }
+    }
+  } else {
+    key_queue.clear();
+  }
+}
+
+function keyPressed() {
+  if(keyCode == 32) {
+    toggleSketch();
+  } else {
+    key_queue.push(keyCode);
+  }
+}
+
