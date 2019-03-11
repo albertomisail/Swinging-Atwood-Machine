@@ -18,7 +18,7 @@ let px = -1;
 let py = -1;
 let cx, cy;
 let buffer;
-let update = true;
+let update = false;
 
 // sliders
 let g_slider;
@@ -30,13 +30,66 @@ let prev = [];
 
 let cam_pos, cam_up, cam_right;
 
+// buttons, text
 let g_text, m_text, M_text, b_text;
 let text_size = 12;
+let start_button;
 
 let alpha=0, beta=0;
 
 let lastMouseX, lastMouseY, lastMouseP = 0;
 let sliderX, sliderY;
+
+let keyval = 0;
+
+if (!Array.prototype.back){
+  Array.prototype.back = function() {
+    return this[this.length - 1];
+  };
+};
+
+class Queue {
+  constructor() {
+    this.inq = [];
+    this.outq = [];
+  }
+  push(item) {
+    this.inq.push(item)
+  }
+  pre() {
+    if(this.outq.length != 0) {
+      return true;
+    }
+    if(this.outq.length == 0 && this.inq.length != 0) {
+      while(this.inq.length != 0) {
+        this.outq.push(this.inq.pop());
+      }
+      return true;
+    }
+    return false;
+  }
+  front() {
+    if(this.pre()) {
+      return this.outq.back();
+    }
+    return null;
+  }
+  pop() {
+    if(this.pre()) {
+      return this.outq.pop();
+    }
+    return null;
+  }
+  size() {
+    return this.outq.length + this.inq.length;
+  }
+  clear() {
+    this.outq = [];
+    this.inq = [];
+  }
+}
+
+let key_queue;
 
 class Rotation {
   constructor(axis, angle) {
@@ -93,6 +146,8 @@ function setup() {
   cam_pos = createVector(0, 0, 1);
   cam_up = createVector(0, 1, 0);
   cam_right = createVector(1, 0, 0);
+
+  key_queue = new Queue();
 
   setupSliders();
   // let stop = createButton("stop");
@@ -159,6 +214,25 @@ function setupSliders(){
   b_text.position((b_slider.x + b_slider.width + 15), (b_slider.y + (b_slider.height / 2) + (text_size / 2)));
   sliderX = M_slider.x+m_slider.width+100;
   sliderY = b_slider.y + b_slider.height+10;
+
+  key_text = createSpan("");
+  key_text.position(M_slider.x, b_slider.y+20);
+  key_text.html("0");
+
+  start_button = createButton();
+  start_button.position(M_slider.x, b_slider.y+b_slider.height+10);
+  start_button.html("start");
+  start_button.mousePressed(toggleSketch);
+}
+
+function toggleSketch() {
+  if(update) {
+    start_button.html("start");
+    update = false;
+  } else {
+    start_button.html("stop");
+    update = true;
+  }
 }
 
 function draw() {
@@ -180,6 +254,7 @@ function draw() {
 
   // if(update === true){
   if(true){
+    initialPositioning();
     calculateNewPosition();
     drawTransition();
   }
@@ -197,23 +272,25 @@ function drawSliders(){
 }
 
 function calculateNewPosition(){
-  for(let i = 0; i < iter_frame; i++){
-		let num1 = - m * g * r * sin(theta);
-		let num2 = - m * v_theta * 2 * r * v_r;
-    let drag_term = -b * r * v_theta;
-    let den = m * r * r;
-    let a_theta = (num1 + num2 + drag_term) / den;
+  if(update) {
+    for(let i = 0; i < iter_frame; i++){
+      let num1 = - m * g * r * sin(theta);
+      let num2 = - m * v_theta * 2 * r * v_r;
+      let drag_term = -b * r * v_theta;
+      let den = m * r * r;
+      let a_theta = (num1 + num2 + drag_term) / den;
 
-    num1 = - M * g + m * g * cos(theta);
-    num2 = m * r * v_theta * v_theta;
-    drag_term = -b * v_r;
-    den = M + m;
-    let a_r = (num1 + num2 + drag_term) / den;
+      num1 = - M * g + m * g * cos(theta);
+      num2 = m * r * v_theta * v_theta;
+      drag_term = -b * v_r;
+      den = M + m;
+      let a_r = (num1 + num2 + drag_term) / den;
 
-    v_theta += a_theta * dt;
-    theta += v_theta * dt;
-    v_r += a_r * dt;
-    r += v_r * dt;
+      v_theta += a_theta * dt;
+      theta += v_theta * dt;
+      v_r += a_r * dt;
+      r += v_r * dt;
+    }
   }
 }
 
@@ -232,3 +309,29 @@ function drawTransition(){
   px = x;
   py = y;
 }
+
+function initialPositioning() {
+  if(!update) {
+    while(key_queue.size() > 0) {
+      prev = [];
+      key_code = key_queue.pop();
+      switch(key_code) {
+        case 37: r -= 10; break;
+        case 38: theta += 0.1; break;
+        case 39: r += 10; break;
+        case 40: theta -= 0.1; break;
+      }
+    }
+  } else {
+    key_queue.clear();
+  }
+}
+
+function keyPressed() {
+  if(keyCode == 32) {
+    toggleSketch();
+  } else {
+    key_queue.push(keyCode);
+  }
+}
+
