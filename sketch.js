@@ -3,7 +3,7 @@ let M = 3;
 let m = 1;
 let g = 9.81;
 let b = 0;
-let dt = 0.00001;
+let dt = 0.01;
 
 // variables
 let r = 200;
@@ -11,22 +11,19 @@ let theta = 0;
 let phi = 0;
 let p_r = 0;
 let p_theta = 0;
-let p_phi = 1;
+let p_phi = 0.001;
 
-let c = [];
-let d = [];
-let e = [];
-let f = [];
-
-let iter_frame = 5000;
+let iter_frame = 50;
 
 let x, y, z;
+
 
 // sliders
 let g_slider;
 let m_slider;
 let M_slider;
 let b_slider;
+
 
 let prev = [];
 
@@ -73,6 +70,7 @@ function setup() {
   createCanvas(800, 600, WEBGL);
   pixelDensity(1);
   theta = PI / 2;
+  phi = PI / 2;
 
   pg = createGraphics(800, 600);
 
@@ -81,6 +79,7 @@ function setup() {
   cam_right = createVector(1, 0, 0);
 
   setupSliders();
+  // setupInputs();
 }
 
 function positionCamera(){
@@ -133,7 +132,7 @@ function setupSliders(){
 
 let counter = 0;
 function draw() {
-  if(counter < 125){
+  if(true){
   background(175);
 
   drawSliders();
@@ -141,10 +140,8 @@ function draw() {
 	strokeWeight(2);
 
 	x = r * sin(theta) * cos(phi);
-	y = r * cos(theta) * cos(phi);
-  z = r * sin(phi);
-
-  console.log(counter + " " + x + " " + z + " " + (-y));
+	y = r * sin(theta) * sin(phi);
+  z = -r * cos(theta);
 
   positionCamera();
 
@@ -199,11 +196,9 @@ function calculateNewPosition(){
     // Runge-Kutta formulas`
     r += (c0 + 2 * c1 + 2 * c2 + c3) / 6;
     theta += (d0 + 2 * d1 + 2 * d2 + d3) / 6;
-    // theta %= 2 * PI;
     p_r += (e0 + 2 * e1 + 2 * e2 + e3) / 6;
     p_theta += (f0 + 2 * f1 + 2 * f2 + f3) / 6;
     phi += (g0 + 2 * g1 + 2 * g2 + g3) / 6;
-    // phi %= 2 * PI;
     p_phi += (h0 + 2 * h1 + 2 * h2 + h3) / 6;
   }
 }
@@ -216,6 +211,6 @@ function drawTransition(){
   endShape();
   if (frameCount > 1) {
     prev.push([x,y,z]);
-    if(prev.length > 10000) prev.shift();
+    if(prev.length > 1000000) prev.shift();
   }
 }
