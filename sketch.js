@@ -1,5 +1,5 @@
 // constants
-let M = 3;
+let M = 6;
 let m = 1;
 let g = 9.81;
 let b = 0;
@@ -49,99 +49,7 @@ if (!Array.prototype.back){
   };
 };
 
-class Queue {
-  constructor() {
-    this.inq = [];
-    this.outq = [];
-  }
-  push(item) {
-    this.inq.push(item)
-  }
-  pre() {
-    if(this.outq.length != 0) {
-      return true;
-    }
-    if(this.outq.length == 0 && this.inq.length != 0) {
-      while(this.inq.length != 0) {
-        this.outq.push(this.inq.pop());
-      }
-      return true;
-    }
-    return false;
-  }
-  front() {
-    if(this.pre()) {
-      return this.outq.back();
-    }
-    return null;
-  }
-  pop() {
-    if(this.pre()) {
-      return this.outq.pop();
-    }
-    return null;
-  }
-  size() {
-    return this.outq.length + this.inq.length;
-  }
-  clear() {
-    this.outq = [];
-    this.inq = [];
-  }
-  runOn(func) {
-    for(let i=this.outq.length-1; i>=0; --i) {
-      func(this.outq[i]);
-    }
-    for(let i=0; i<this.inq.length; ++i) {
-      func(this.inq[i]);
-    }
-  }
-}
-
 let key_queue;
-
-class Rotation {
-  constructor(axis, angle) {
-    this.axis = axis;
-    this.angle = angle;
-    // from https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
-    // 3d rotation matrix of this form:
-    // a b c
-    // d e f
-    // g h i
-    this.a = cos(angle)+axis.x*axis.x*(1-cos(angle));
-    this.b = axis.x*axis.y*(1-cos(angle))-axis.z*sin(angle);
-    this.c = axis.x*axis.z*(1-cos(angle))+axis.y*sin(angle);
-    this.d = axis.y*axis.x*(1-cos(angle))+axis.z*sin(angle);
-    this.e = cos(angle)+axis.y*axis.y*(1-cos(angle));
-    this.f = axis.y*axis.z*(1-cos(angle))-axis.x*sin(angle);
-    this.g = axis.z*axis.x*(1-cos(angle))-axis.y*sin(angle);
-    this.h = axis.z*axis.y*(1-cos(angle))+axis.x*sin(angle);
-    this.i = cos(angle)+axis.z*axis.z*(1-cos(angle));
-  }
-  rotate(vec)
-  {
-    if(typeof vec.x != 'undefined') {
-      let ans = createVector();
-      ans.x = this.a*vec.x+this.b*vec.y+this.c*vec.z;
-      ans.y = this.d*vec.x+this.e*vec.y+this.f*vec.z;
-      ans.z = this.g*vec.x+this.h*vec.y+this.i*vec.z;
-      return ans;
-    } else {
-      let ans = new Rotation(createVector(), 0);
-      ans.a = this.a*vec.a + this.b*vec.d + this.c*vec.g;
-      ans.b = this.a*vec.b + this.b*vec.e + this.c*vec.h;
-      ans.c = this.a*vec.c + this.b*vec.f + this.c*vec.i;
-      ans.d = this.d*vec.a + this.e*vec.d + this.f*vec.g;
-      ans.e = this.d*vec.b + this.e*vec.e + this.f*vec.h;
-      ans.f = this.d*vec.c + this.e*vec.f + this.f*vec.i;
-      ans.g = this.g*vec.a + this.h*vec.d + this.i*vec.g;
-      ans.h = this.g*vec.b + this.h*vec.e + this.i*vec.h;
-      ans.i = this.g*vec.c + this.h*vec.f + this.i*vec.i;
-      return ans;
-    }
-  }
-}
 
 function setup() {
   createCanvas(800, 600, WEBGL);
@@ -159,7 +67,6 @@ function setup() {
   prev = new Queue();
 
   setupSliders();
-  // setupInputs();
 }
 
 function positionCamera(){
@@ -180,13 +87,6 @@ function positionCamera(){
       cam_up = rot.rotate(cam_up);
       cam_right = rot.rotate(cam_right);
       cam_pos = rot.rotate(cam_pos);
-      /*
-      cam_up = rotx.rotate(cam_up);
-      cam_up = roty.rotate(cam_up);
-      cam_right = rotx.rotate(cam_right);
-      cam_right = roty.rotate(cam_right);
-      cam_pos = rotx.rotate(cam_pos);
-      cam_pos = roty.rotate(cam_pos); */
     }
     lastMouseX = mouseX;
     lastMouseY = mouseY;
@@ -280,24 +180,21 @@ function toggleSketch() {
 
 let counter = 0;
 function draw() {
-  if(true){
-    background(175);
+  background(175);
 
-    drawSliders();
-    stroke(0);
-    strokeWeight(2);
+  drawSliders();
+  stroke(0);
+  strokeWeight(2);
 
-    x = r * sin(theta) * cos(phi);
-    y = r * sin(theta) * sin(phi);
-    z = -r * cos(theta);
+  x = r * sin(theta) * cos(phi);
+  y = r * sin(theta) * sin(phi);
+  z = -r * cos(theta);
 
-    positionCamera();
+  positionCamera();
 
-    initialPositioning();
-    calculateNewPosition();
-    drawTransition();
-    counter++;
-  }
+  initialPositioning();
+  calculateNewPosition();
+  drawTransition();
 }
 
 function drawSliders(){
@@ -307,14 +204,14 @@ function drawSliders(){
     M_enter = false;
     M = parseFloat(M_box.value());
   }
-  
+
   if(m_slider.value() != m) {
     m = m_slider.value();
   } else if((m_box.value() != m && m_box.elt !== document.activeElement) || m_enter) {
     m_enter = false;
     m = parseFloat(m_box.value());
   }
-  
+
   if(g_slider.value() != g) {
     g = g_slider.value();
   } else if((g_box.value() != g && g_box.elt !== document.activeElement) || g_enter) {
@@ -348,44 +245,60 @@ function drawSliders(){
 
 function calculateNewPosition(){
   if(update) {
-    let aux = phi;
     for(let i = 0; i < iter_frame; i++){
-      // Calculate coefficients
-      let c0 = dt * p_r / (M + m);
-      let d0 = dt * p_theta / (m * r * r);
-      let e0 = dt * (p_theta * p_theta / (m * r * r * r) - M * g + m * g * cos(theta) + p_phi * p_phi / (m * r * r * r * sin(theta) * sin(theta)));
-      let f0 = dt * (- m * g * r * sin(theta) + p_phi * p_phi * cos(theta) / (m * r * r * sin(theta) * sin(theta) * sin(theta)));
-      let g0 = dt * (p_phi / (m * r * r * sin(theta) * sin(theta)));
-      let h0 = 0;
+        let c_arr = [];
+        let d_arr = [];
+        let e_arr = [];
+        let f_arr = [];
+        let g_arr = [];
+        let h_arr = [];
+        let prev_c = 0; // r
+        let prev_d = 0; // theta
+        let prev_e = 0; // p_r
+        let prev_f = 0; // p_theta
+        let prev_g = 0; // phi
+        let prev_h = 0; // p_phi
 
-      let c1 = dt * (p_r + e0 / 2) / (M + m);
-      let d1 = dt * (p_theta + f0 / 2) / (m * (r + c0 / 2) * (r + c0 / 2));
-      let e1 = dt * ((p_theta + f0 / 2) * (p_theta + f0 / 2) / (m * (r + c0 / 2) * (r + c0 / 2) * (r + c0 / 2)) - M * g + m * g * cos(theta + d0 / 2) + (p_phi + h0 / 2) * (p_phi + h0 / 2) / (m * (r + c0 / 2) * (r + c0 / 2) * (r + c0 / 2) * sin(theta + d0 / 2) * sin(theta + d0 / 2)));
-      let f1 = dt * (- m * g * (r + c0 / 2) * sin(theta + d0 / 2) + (p_phi + h0 / 2) * (p_phi + h0 / 2) * cos(theta + d0 / 2) / (m * (r + c0 / 2) * (r + c0 / 2) * sin(theta + d0 / 2) * sin(theta + d0 / 2) * sin(theta + d0 / 2)));
-      let g1 = dt * ((p_phi + h0 / 2) / (m * (r + c0 / 2) * (r + c0 / 2) * sin(theta + d0 / 2) * sin(theta + d0 / 2)));
-      let h1 = 0;
+        for(let j = 0; j < 4; j++){
+          let r_aux = r + prev_c / 2;
+          let theta_aux = theta + prev_d / 2;
+          let p_r_aux = p_r + prev_e / 2;
+          let p_theta_aux = p_theta + prev_f / 2;
+          let phi_aux = phi + prev_g / 2;
+          let p_phi_aux = p_phi + prev_h / 2;
 
-      let c2 = dt * (p_r + e1 / 2) / (M + m);
-      let d2 = dt * (p_theta + f1 / 2) / (m * (r + c1 / 2) * (r + c1 / 2));
-      let e2 = dt * ((p_theta + f1 / 2) * (p_theta + f1 / 2) / (m * (r + c1 / 2) * (r + c1 / 2) * (r + c1 / 2)) - M * g + m * g * cos(theta + d1 / 2) + (p_phi + h1 / 2) * (p_phi + h1 / 2) / (m * (r + c1 / 2) * (r + c1 / 2) * (r + c1 / 2) * sin(theta + d1 / 2) * sin(theta + d1 / 2)));
-      let f2 = dt * (- m * g * (r + c1 / 2) * sin(theta + d1 / 2) + (p_phi + h1 / 2) * (p_phi + h1 / 2) * cos(theta + d1 / 2) / (m * (r + c1 / 2) * (r + c1 / 2) * sin(theta + d1 / 2) * sin(theta + d1 / 2) * sin(theta + d1 / 2)));
-      let g2 = dt * ((p_phi + h1 / 2) / (m * (r + c1 / 2) * (r + c1 / 2) * sin(theta + d1 / 2) * sin(theta + d1 / 2)));;
-      let h2 = 0;
+          let c_j = dt * (p_r_aux) / (M+m);
+          prev_c = c_j;
+          c_arr.push(c_j);
 
-      let c3 = dt * (p_r + e2 / 2) / (M + m);
-      let d3 = dt * (p_theta + f2 / 2) / (m * (r + c2 / 2) * (r + c2 / 2));
-      let e3 = dt * ((p_theta + f2 / 2) * (p_theta + f2 / 2) / (m * (r + c2 / 2) * (r + c2 / 2) * (r + c2 / 2)) - M * g + m * g * cos(theta + d2 / 2) + (p_phi + h2 / 2) * (p_phi + h2 / 2) / (m * (r + c2 / 2) * (r + c2 / 2) * (r + c2 / 2) * sin(theta + d2 / 2) * sin(theta + d2 / 2)));
-      let f3 = dt * (- m * g * (r + c2 / 2) * sin(theta + d2 / 2) + (p_phi + h2 / 2) * (p_phi + h2 / 2) * cos(theta + d2 / 2) / (m * (r + c2 / 2) * (r + c2 / 2) * sin(theta + d2 / 2) * sin(theta + d2 / 2) * sin(theta + d2 / 2)));
-      let g3 = dt * ((p_phi + h2 / 2) / (m * (r + c2 / 2) * (r + c2 / 2) * sin(theta + d2 / 2) * sin(theta + d2 / 2)));;
-      let h3 = 0;
+          let d_j = dt * (p_theta_aux) / (m * r_aux * r_aux);
+          prev_d = d_j;
+          d_arr.push(d_j);
 
-      // Runge-Kutta formulas`
-      r += (c0 + 2 * c1 + 2 * c2 + c3) / 6;
-      theta += (d0 + 2 * d1 + 2 * d2 + d3) / 6;
-      p_r += (e0 + 2 * e1 + 2 * e2 + e3) / 6;
-      p_theta += (f0 + 2 * f1 + 2 * f2 + f3) / 6;
-      phi += (g0 + 2 * g1 + 2 * g2 + g3) / 6;
-      p_phi += (h0 + 2 * h1 + 2 * h2 + h3) / 6;
+          let e_j = dt * (p_theta_aux * p_theta_aux / (m * r_aux * r_aux * r_aux) - M * g + m * g * cos(theta_aux) + p_phi_aux * p_phi_aux / (m * r_aux * r_aux * r_aux * sin(theta_aux) * sin(theta_aux)));
+          prev_e = e_j;
+          e_arr.push(e_j);
+
+          let f_j = dt * (- m * g * r_aux * sin(theta_aux) + p_phi_aux * p_phi_aux * cos(theta_aux) / (m * r_aux * r_aux * sin(theta_aux) * sin(theta_aux) * sin(theta_aux)));
+          prev_f = f_j;
+          f_arr.push(f_j);
+
+          let g_j = dt * (p_phi_aux / (m * r_aux * r_aux * sin(theta_aux) * sin(theta_aux)));
+          prev_g = g_j;
+          g_arr.push(g_j);
+
+          let h_j = 0;
+          prev_h = h_j;
+          h_arr.push(h_j);
+        }
+
+        // Runge-Kutta formulas
+        r += (c_arr[0] + 2 * c_arr[1] + 2 * c_arr[2] + c_arr[3]) / 6;
+        theta += (d_arr[0] + 2 * d_arr[1] + 2 * d_arr[2] + d_arr[3]) / 6;
+        p_r += (e_arr[0] + 2 * e_arr[1] + 2 * e_arr[2] + e_arr[3]) / 6;
+        p_theta += (f_arr[0] + 2 * f_arr[1] + 2 * f_arr[2] + f_arr[3]) / 6;
+        phi += (g_arr[0] + 2 * g_arr[1] + 2 * g_arr[2] + g_arr[3]) / 6;
+        p_phi += (h_arr[0] + 2 * h_arr[1] + 2 * h_arr[2] + h_arr[3]) / 6;
     }
   }
 }
@@ -434,4 +347,3 @@ function keyPressed() {
     key_queue.push(keyCode);
   }
 }
-
