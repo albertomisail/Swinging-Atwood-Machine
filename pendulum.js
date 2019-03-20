@@ -1,6 +1,5 @@
 class Pendulum{
   constructor(){
-    console.log("here");
     // constants
     this.M = 5;
     this.m = 1;
@@ -52,11 +51,16 @@ class Pendulum{
           prev_d = d_j;
           d_arr.push(d_j);
 
-          let e_j = this.dt * (p_theta_aux * p_theta_aux / (this.m * r_aux * r_aux * r_aux) - this.M * this.g + this.m * this.g * cos(theta_aux) + p_phi_aux * p_phi_aux / (this.m * r_aux * r_aux * r_aux * sin(theta_aux) * sin(theta_aux)));
+          let e_j = this.dt * (p_theta_aux * p_theta_aux / (this.m * r_aux * r_aux * r_aux)
+                                - this.M * this.g + this.m * this.g * cos(theta_aux)
+                                + p_phi_aux * p_phi_aux / (this.m * r_aux * r_aux * r_aux * sin(theta_aux) * sin(theta_aux))
+                                - this.b * p_theta_aux / (this.m * r_aux * r_aux)); // drag term
           prev_e = e_j;
           e_arr.push(e_j);
 
-          let f_j = this.dt * (- this.m * this.g * r_aux * sin(theta_aux) + p_phi_aux * p_phi_aux * cos(theta_aux) / (this.m * r_aux * r_aux * sin(theta_aux) * sin(theta_aux) * sin(theta_aux)));
+          let f_j = this.dt * (- this.m * this.g * r_aux * sin(theta_aux)
+                                + p_phi_aux * p_phi_aux * cos(theta_aux) / (this.m * r_aux * r_aux * sin(theta_aux) * sin(theta_aux) * sin(theta_aux))
+                                - this.b * r_aux * p_theta_aux / (this.m * r_aux * r_aux)); // drag term
           prev_f = f_j;
           f_arr.push(f_j);
 
@@ -64,7 +68,8 @@ class Pendulum{
           prev_g = g_j;
           g_arr.push(g_j);
 
-          let h_j = 0;
+          let h_j = this.dt * (0
+                              - this.b * r_aux * sin(theta_aux) * p_phi_aux / (this.m * r_aux * r_aux * sin(theta_aux) * sin(theta_aux))); // drag term
           prev_h = h_j;
           h_arr.push(h_j);
         }
