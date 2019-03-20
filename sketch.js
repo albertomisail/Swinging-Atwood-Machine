@@ -1,22 +1,3 @@
-// constants
-let M = 6;
-let m = 1;
-let g = 9.81;
-let b = 0;
-let dt = 0.01;
-
-// variables
-let r = 200;
-let theta = 0;
-let phi = 0;
-let p_r = 0;
-let p_theta = 0;
-let p_phi = 0.001;
-
-let iter_frame = 50;
-
-let x, y, z;
-
 let update = false;
 
 // sliders
@@ -51,11 +32,11 @@ if (!Array.prototype.back){
 
 let key_queue;
 
+let pendulum;
+
 function setup() {
   createCanvas(800, 600, WEBGL);
   pixelDensity(1);
-  theta = PI / 2;
-  phi = PI / 2;
 
   pg = createGraphics(800, 600);
 
@@ -63,8 +44,8 @@ function setup() {
   cam_up = createVector(0, 0, -1);
   cam_right = createVector(0, -1, 0);
 
+  pendulum = new Pendulum();
   key_queue = new Queue();
-  prev = new Queue();
 
   setupSliders();
 }
@@ -97,10 +78,10 @@ function positionCamera(){
 }
 
 function setupSliders(){
-  g_slider = createSlider(0, 20, g, 0.01);
-  m_slider = createSlider(0, 10, m, 0.01);
-  M_slider = createSlider(0, 20, M, 0.01);
-  b_slider = createSlider(0, 10, b, 0.01);
+  g_slider = createSlider(0, 20, pendulum.g, 0.01);
+  m_slider = createSlider(0, 10, pendulum.m, 0.01);
+  M_slider = createSlider(0, 20, pendulum.M, 0.01);
+  b_slider = createSlider(0, 10, pendulum.b, 0.01);
   g_text = createSpan("");
   M_text = createSpan("");
   m_text = createSpan("");
@@ -113,10 +94,10 @@ function setupSliders(){
   m_box = createInput();
   M_box = createInput();
   b_box = createInput();
-  g_box.value(g);
-  m_box.value(m);
-  M_box.value(M);
-  b_box.value(b);
+  g_box.value(pendulum.g);
+  m_box.value(pendulum.m);
+  M_box.value(pendulum.M);
+  b_box.value(pendulum.b);
   g_box.size(40, g_text.height);
   m_box.size(40, g_text.height);
   M_box.size(40, g_text.height);
@@ -186,10 +167,6 @@ function draw() {
   stroke(0);
   strokeWeight(2);
 
-  x = r * sin(theta) * cos(phi);
-  y = r * sin(theta) * sin(phi);
-  z = -r * cos(theta);
-
   positionCamera();
 
   initialPositioning();
@@ -198,136 +175,82 @@ function draw() {
 }
 
 function drawSliders(){
-  if(M_slider.value() != M) {
-    M = M_slider.value();
-  } else if((M_box.value() != M && M_box.elt !== document.activeElement) || M_enter) {
+  if(M_slider.value() != pendulum.M) {
+    pendulum.M = M_slider.value();
+  } else if((M_box.value() != pendulum.M && M_box.elt !== document.activeElement) || M_enter) {
     M_enter = false;
-    M = parseFloat(M_box.value());
+    pendulum.M = parseFloat(M_box.value());
   }
 
-  if(m_slider.value() != m) {
-    m = m_slider.value();
-  } else if((m_box.value() != m && m_box.elt !== document.activeElement) || m_enter) {
+  if(m_slider.value() != pendulum.m) {
+    pendulum.m = m_slider.value();
+  } else if((m_box.value() != pendulum.m && m_box.elt !== document.activeElement) || m_enter) {
     m_enter = false;
-    m = parseFloat(m_box.value());
+    pendulum.m = parseFloat(m_box.value());
   }
 
-  if(g_slider.value() != g) {
-    g = g_slider.value();
-  } else if((g_box.value() != g && g_box.elt !== document.activeElement) || g_enter) {
+  if(g_slider.value() != pendulum.g) {
+    pendulum.g = g_slider.value();
+  } else if((g_box.value() != pendulum.g && g_box.elt !== document.activeElement) || g_enter) {
     g_enter = false;
-    g = parseFloat(g_box.value());
+    pendulum.g = parseFloat(g_box.value());
   }
 
-  if(b_slider.value() != b) {
-    b = b_slider.value();
-  } else if((b_box.value() != b && b_box.elt !== document.activeElement) || b_enter) {
+  if(b_slider.value() != pendulum.b) {
+    pendulum.b = b_slider.value();
+  } else if((b_box.value() != pendulum.b && b_box.elt !== document.activeElement) || b_enter) {
     b_enter = false;
-    b = parseFloat(b_box.value());
+    pendulum.b = parseFloat(b_box.value());
   }
-  m_slider.value(m);
-  M_slider.value(M);
-  g_slider.value(g);
-  b_slider.value(b);
+  m_slider.value(pendulum.m);
+  M_slider.value(pendulum.M);
+  g_slider.value(pendulum.g);
+  b_slider.value(pendulum.b);
   if(m_box.elt !== document.activeElement) {
-    m_box.value(m);
+    m_box.value(pendulum.m);
   }
   if(M_box.elt !== document.activeElement) {
-    M_box.value(M);
+    M_box.value(pendulum.M);
   }
   if(g_box.elt !== document.activeElement) {
-    g_box.value(g);
+    g_box.value(pendulum.g);
   }
   if(b_box.elt !== document.activeElement) {
-    b_box.value(b);
+    b_box.value(pendulum.b);
   }
 }
 
 function calculateNewPosition(){
   if(update) {
-    for(let i = 0; i < iter_frame; i++){
-        let c_arr = [];
-        let d_arr = [];
-        let e_arr = [];
-        let f_arr = [];
-        let g_arr = [];
-        let h_arr = [];
-        let prev_c = 0; // r
-        let prev_d = 0; // theta
-        let prev_e = 0; // p_r
-        let prev_f = 0; // p_theta
-        let prev_g = 0; // phi
-        let prev_h = 0; // p_phi
-
-        for(let j = 0; j < 4; j++){
-          let r_aux = r + prev_c / 2;
-          let theta_aux = theta + prev_d / 2;
-          let p_r_aux = p_r + prev_e / 2;
-          let p_theta_aux = p_theta + prev_f / 2;
-          let phi_aux = phi + prev_g / 2;
-          let p_phi_aux = p_phi + prev_h / 2;
-
-          let c_j = dt * (p_r_aux) / (M+m);
-          prev_c = c_j;
-          c_arr.push(c_j);
-
-          let d_j = dt * (p_theta_aux) / (m * r_aux * r_aux);
-          prev_d = d_j;
-          d_arr.push(d_j);
-
-          let e_j = dt * (p_theta_aux * p_theta_aux / (m * r_aux * r_aux * r_aux) - M * g + m * g * cos(theta_aux) + p_phi_aux * p_phi_aux / (m * r_aux * r_aux * r_aux * sin(theta_aux) * sin(theta_aux)));
-          prev_e = e_j;
-          e_arr.push(e_j);
-
-          let f_j = dt * (- m * g * r_aux * sin(theta_aux) + p_phi_aux * p_phi_aux * cos(theta_aux) / (m * r_aux * r_aux * sin(theta_aux) * sin(theta_aux) * sin(theta_aux)));
-          prev_f = f_j;
-          f_arr.push(f_j);
-
-          let g_j = dt * (p_phi_aux / (m * r_aux * r_aux * sin(theta_aux) * sin(theta_aux)));
-          prev_g = g_j;
-          g_arr.push(g_j);
-
-          let h_j = 0;
-          prev_h = h_j;
-          h_arr.push(h_j);
-        }
-
-        // Runge-Kutta formulas
-        r += (c_arr[0] + 2 * c_arr[1] + 2 * c_arr[2] + c_arr[3]) / 6;
-        theta += (d_arr[0] + 2 * d_arr[1] + 2 * d_arr[2] + d_arr[3]) / 6;
-        p_r += (e_arr[0] + 2 * e_arr[1] + 2 * e_arr[2] + e_arr[3]) / 6;
-        p_theta += (f_arr[0] + 2 * f_arr[1] + 2 * f_arr[2] + f_arr[3]) / 6;
-        phi += (g_arr[0] + 2 * g_arr[1] + 2 * g_arr[2] + g_arr[3]) / 6;
-        p_phi += (h_arr[0] + 2 * h_arr[1] + 2 * h_arr[2] + h_arr[3]) / 6;
-    }
+    pendulum.calculateNewPosition();
   }
 }
 
 function drawTransition(){
   beginShape(POINTS);
-  prev.runOn(function(q) {
+  pendulum.prev.runOn(function(q) {
     vertex(q[0], q[1], q[2]);
   });
   endShape();
   if (frameCount > 1) {
-    prev.push([x,y,z]);
-    if(prev.length > 1000000) prev.pop();
+    pendulum.addXYZ();
+    if(pendulum.prev.length > 1000000) pendulum.prev.pop();
   }
 }
 
 function initialPositioning() {
   if(!update) {
-    x = r * sin(theta) * cos(phi);
-    y = r * sin(theta) * sin(phi);
-    z = -r * cos(theta);
+    // x = r * sin(theta) * cos(phi);
+    // y = r * sin(theta) * sin(phi);
+    // z = -r * cos(theta);
     while(key_queue.size() > 0) {
-      prev = new Queue();
+      pendulum.prev = new Queue();
       key_code = key_queue.pop();
       switch(key_code) {
-        case 37: r -= 10; break;
-        case 38: theta += 0.1; break;
-        case 39: r += 10; break;
-        case 40: theta -= 0.1; break;
+        case 37: pendulum.r -= 10; break;
+        case 38: pendulum.theta += 0.1; break;
+        case 39: pendulum.r += 10; break;
+        case 40: pendulum.theta -= 0.1; break;
         case 65: ; break;
         case 68: ; break;
         case 70: ; break;
