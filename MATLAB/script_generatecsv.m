@@ -14,9 +14,8 @@ function generate_csv(u)
     ICs=[r_0, theta_0, p_r_0, p_theta_0, u];
 
     [tsol, varsol]=ode45(@ode_sys, range,ICs);
-    varsol(:,2) = varsol(:,2) - pi/2;
+    varsol(:,2) = varsol(:,2) - pi/2; %adjustment due to MATLAB polar coordinate convention
 
     filename = sprintf('BifurcationData/mass_ratio_%d.csv', u);
     csvwrite(filename, [tsol, varsol]);
 end
-
