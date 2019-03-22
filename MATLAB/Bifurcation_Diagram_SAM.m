@@ -15,7 +15,7 @@ g=9.81;
 m=1;
 for i=1:numel(x)
     
-    z=[1;0.5;0.1;0.1;mu_s(i)];
+    z=[2;pi/2;0;0;mu_s(i)];
     
     %z(1)= r_s(i);
     %z(2)= theta_s(i);
@@ -23,14 +23,14 @@ for i=1:numel(x)
     %z(4)= p_theta_s(i);
     %mu= mu_s(i); M= mu*m;
     
-    %F = @(t,var) [var(3)/(M+m);var(4)/(m*var(1)^2); (var(4)^2/(m*var(1)^3))-M*g+m*g*cos(var(2));-m*g*var(1)*sin(var(2))];
-    
     range = linspace(0,500,10001); %time values
     [tsol, varsol]=ode45(@ode_sys,range,z);
-    y(:,i)= varsol(10001-1999:20:10001,2);
+    y(:,i)= atan(tan(varsol(10001-1999:20:10001,2)));
 end
-plot(x,y,'.','blue')
-ylim([-pi,pi]);
+plot(x,y,'.')
+title('Bifurcation Diagram for mass ratio with initial conditions r=2,\theta=\pi/2');
+ylabel('\theta');
+xlabel('mass ratio');
 
 function diffeqs=ode_sys(t, var)
     r=var(1); %length of pendulum
