@@ -164,15 +164,21 @@ function setupSliders(){
   reset_button.html("reset");
   reset_button.position(start_button.x+start_button.width+10, start_button.y);
   reset_button.mousePressed(resetButton);
+
+  message_text = createSpan();
+  message_text.html("Arrow keys alter position, asdw alters velocity");
+  message_text.position(g_slider.x+g_slider.width+10, g_slider.y-15);
 }
 
 function toggleSketch() {
   if(update) {
     start_button.html("start");
     update = false;
+    message_text.style("visibility: visible;");
   } else {
     start_button.html("stop");
     update = true;
+    message_text.style("visibility: hidden;");
   }
 }
 function resetButton() {
@@ -275,12 +281,12 @@ function calculateNewPosition(){
 
   push();
   stroke(color(0, 0, 200));
-  let pr = pendulum.drhat().mult(pendulum.p_r/100).add(pendulum.pos());
-  let pt = pendulum.dthetahat().mult(pendulum.p_theta/100).add(pendulum.pos());
+  let pr = pendulum.drhat().mult(pendulum.p_r/5).add(pendulum.pos());
+  let pt = pendulum.dthetahat().mult(pendulum.p_theta/200).add(pendulum.pos());
   let pp = pendulum.dphihat().mult(pendulum.p_phi).add(pendulum.pos());
   line(pendulum.x(), pendulum.y(), pendulum.z(), pr.x, pr.y, pr.z);
   line(pendulum.x(), pendulum.y(), pendulum.z(), pt.x, pt.y, pt.z);
-  line(pendulum.x(), pendulum.y(), pendulum.z(), pp.x, pp.y, pp.z);
+  //line(pendulum.x(), pendulum.y(), pendulum.z(), pp.x, pp.y, pp.z);
   pop();
 
   stroke(color(0,0,0));
@@ -311,10 +317,10 @@ function initialPositioning() {
         case 38: pendulum.theta += 0.1; break;
         case 39: pendulum.r += 10; break;
         case 40: pendulum.theta -= 0.1; break;
-        case 65: ; break;
-        case 68: ; break;
-        case 70: ; break;
-        case 83: ; break;
+        case 65: pendulum.p_r -= 30; break;
+        case 68: pendulum.p_r += 30; break;
+        case 87: pendulum.p_theta += 1000; break;
+        case 83: pendulum.p_theta -= 1000; break;
       }
     }
   } else {
