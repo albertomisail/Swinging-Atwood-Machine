@@ -84,6 +84,44 @@ class Pendulum{
     }
   }
 
+  x() {
+    return this.r * sin(this.theta) * cos(this.phi);
+  }
+  y() {
+    return this.r * sin(this.theta) * sin(this.phi);
+  }
+  z() {
+    return -this.r * cos(this.theta);
+  }
+  pos() {
+    let ret = createVector();
+    ret.x = this.x();
+    ret.y = this.y();
+    ret.z = this.z();
+    return ret;
+  }
+  drhat() {
+    let rh = createVector();
+    rh.x = sin(this.theta) * cos(this.phi);
+    rh.y = sin(this.theta) * sin(this.phi);
+    rh.z = - cos(this.theta);
+    return rh;
+  }
+  dthetahat() {
+    let th = createVector();
+    th.x = sin(this.theta+PI/2) * cos(this.phi);
+    th.y = sin(this.theta+PI/2) * sin(this.phi);
+    th.z = - cos(this.theta+PI/2);
+    return th;
+  }
+  dphihat() {
+    let ph = createVector();
+    ph.x = sin(this.theta) * cos(this.phi+PI/2);
+    ph.y = sin(this.theat) * sin(this.phi+PI/2);
+    ph.z = 0;
+    return ph;
+  }
+
   addXYZ(){
     let res = [];
     let x = this.r * sin(this.theta) * cos(this.phi);
