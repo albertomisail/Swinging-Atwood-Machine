@@ -216,7 +216,7 @@ function draw() {
 
   initialPositioning();
   calculateNewPosition();
-  console.log(counter);
+  // console.log(counter);
   drawTransition();
   counter++;}
 }
@@ -274,7 +274,7 @@ function calculateNewPosition(){
   if(update) {
     pendulum.calculateNewPosition();
   }
-    
+
   push();
   fill(200);
   stroke(color(200, 0, 0));
