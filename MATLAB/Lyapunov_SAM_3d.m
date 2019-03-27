@@ -3,12 +3,12 @@ m=1; %pendulum mass
 u=10; %mass ratio
 M=u*m; %larger mass
 
-Ly=zeros(6,180);
+Ly=zeros(6,100);
 
- r_s = linspace(1,10,180); x= r_s;
+% r_s = linspace(1,10,180); x= r_s;
 % theta_s = linspace(0,pi,180); x= theta_s;
 % phi_s = linspace(0,2*pi,360); x= phi_s;
-% p_r_s = linspace(0,10,100); x= p_r_s;
+ p_r_s = linspace(0,10,100); x= p_r_s;
 % p_theta_s = linspace(0,10,100); x= p_theta_s;
 % p_phi_s = linspace(0,10,100); x= p_phi_s;
 % u_s = linspace(1,20,100); x= u_s;
@@ -16,10 +16,10 @@ Ly=zeros(6,180);
 for i = 1:numel(x)
     z_0= [1;0.5;0.5;0.1;0.1;0.1];
     
-    z_0(1)= r_s(i);
+    %z_0(1)= r_s(i);
     %z_0(2)= theta_s(i);
     %z_0(3)= phi_s(i);
-    %z_0(4)= p_r_s(i);
+    z_0(4)= p_r_s(i);
     %z_0(5)= p_theta_s(i);
     %z_0(6)= p_phi_s(i);
     %u= u_s(i); M= u*m;
@@ -39,6 +39,7 @@ for i = 1:numel(x)
     end
 end
 
+close all;
 plot(x,Ly(1,:));
 hold on;
 plot(x,Ly(2,:));

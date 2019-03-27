@@ -15,7 +15,7 @@ let g_text, m_text, M_text, b_text;
 let g_box, m_box, M_box, b_box;
 let g_enter, m_enter, M_enter, b_enter;
 let text_size = 12;
-let start_button;
+let start_button, reset_button;
 
 let alpha=0, beta=0;
 
@@ -33,6 +33,7 @@ if (!Array.prototype.back){
 let key_queue;
 
 let pendulum;
+let reset_values;
 
 function setup() {
   createCanvas(800, 600, WEBGL);
@@ -47,6 +48,7 @@ function setup() {
   pendulum = new Pendulum();
   key_queue = new Queue();
 
+  reset_values = false;
   setupSliders();
 }
 
@@ -82,35 +84,44 @@ function setupSliders(){
   m_slider = createSlider(0, 10, pendulum.m, 0.01);
   M_slider = createSlider(0, 20, pendulum.M, 0.001);
   b_slider = createSlider(0, 10, pendulum.b, 0.01);
+
   g_text = createSpan("");
   M_text = createSpan("");
   m_text = createSpan("");
   b_text = createSpan("");
+
   m_text.html("m: ");
   M_text.html("M: ");
   g_text.html("gravity: ");
   b_text.html("damping: ");
+
   g_box = createInput();
   m_box = createInput();
   M_box = createInput();
   b_box = createInput();
+
   g_box.value(pendulum.g);
   m_box.value(pendulum.m);
   M_box.value(pendulum.M);
   b_box.value(pendulum.b);
+
   g_box.size(40, g_text.height);
   m_box.size(40, g_text.height);
   M_box.size(40, g_text.height);
   b_box.size(40, g_text.height);
+
   g_text.position(15, 15);
   g_box.position(90, g_text.y);
   g_slider.position(g_text.x, g_text.y + g_text.height + 10);
+
   m_text.position(g_slider.x, g_slider.y + g_slider.height + 10 );
   m_box.position(90, m_text.y);
   m_slider.position(g_slider.x, m_text.y + m_text.height + 10);
+
   M_text.position(m_slider.x, m_slider.y + m_slider.height + 10 );
   M_box.position(90, M_text.y);
   M_slider.position(m_slider.x, M_text.y + M_text.height + 10);
+
   b_text.position(M_slider.x, M_slider.y + M_slider.height + 10 );
   b_box.position(90, b_text.y);
   b_slider.position(M_slider.x, b_text.y + b_text.height + 10);
@@ -119,6 +130,7 @@ function setupSliders(){
   M_enter = false;
   g_enter = false;
   b_enter = false;
+
   m_box.elt.addEventListener("keydown", function(e) {
     if(e.key === "Enter") {
       m_enter = true;
@@ -144,19 +156,51 @@ function setupSliders(){
   sliderY = b_slider.y + b_slider.height+10;
 
   start_button = createButton();
-  start_button.position(M_slider.x, b_slider.y+b_slider.height+10);
   start_button.html("start");
+  start_button.position(M_slider.x, b_slider.y+b_slider.height+10);
   start_button.mousePressed(toggleSketch);
+
+  reset_button = createButton();
+  reset_button.html("reset");
+  reset_button.position(start_button.x+start_button.width+10, start_button.y);
+  reset_button.mousePressed(resetButton);
+
+  message_text = createSpan();
+  message_text.html("Arrow keys alter position, asdw alters velocity");
+  message_text.position(g_slider.x+g_slider.width+10, g_slider.y-15);
 }
 
 function toggleSketch() {
   if(update) {
     start_button.html("start");
     update = false;
+    message_text.style("visibility: visible;");
   } else {
     start_button.html("stop");
     update = true;
+    message_text.style("visibility: hidden;");
   }
+}
+function resetButton() {
+  if(update) {
+    toggleSketch();
+  }
+  reset_values = true;
+  pendulum = new Pendulum();
+  loadToSliders();
+  reset_values = false;
+}
+
+function loadToSliders() {
+  g_slider.value(pendulum.g);
+  m_slider.value(pendulum.m);
+  M_slider.value(pendulum.M);
+  b_slider.value(pendulum.b);
+
+  g_box.value(pendulum.g);
+  m_box.value(pendulum.m);
+  M_box.value(pendulum.M);
+  b_box.value(pendulum.b);
 }
 
 let counter = 0;
@@ -178,6 +222,9 @@ function draw() {
 }
 
 function drawSliders(){
+  if(reset_values) {
+    return;
+  }
   if(M_slider.value() != pendulum.M) {
     pendulum.M = M_slider.value();
   } else if((M_box.value() != pendulum.M && M_box.elt !== document.activeElement) || M_enter) {
@@ -227,6 +274,25 @@ function calculateNewPosition(){
   if(update) {
     pendulum.calculateNewPosition();
   }
+    
+  push();
+  fill(200);
+  stroke(color(200, 0, 0));
+  translate(pendulum.x(), pendulum.y(), pendulum.z());
+  sphere(5);
+  pop();
+
+  push();
+  stroke(color(0, 0, 200));
+  let pr = pendulum.drhat().mult(pendulum.p_r/5).add(pendulum.pos());
+  let pt = pendulum.dthetahat().mult(pendulum.p_theta/200).add(pendulum.pos());
+  let pp = pendulum.dphihat().mult(pendulum.p_phi).add(pendulum.pos());
+  line(pendulum.x(), pendulum.y(), pendulum.z(), pr.x, pr.y, pr.z);
+  line(pendulum.x(), pendulum.y(), pendulum.z(), pt.x, pt.y, pt.z);
+  //line(pendulum.x(), pendulum.y(), pendulum.z(), pp.x, pp.y, pp.z);
+  pop();
+
+  stroke(color(0,0,0));
 }
 
 function drawTransition(){
@@ -254,10 +320,10 @@ function initialPositioning() {
         case 38: pendulum.theta += 0.1; break;
         case 39: pendulum.r += 10; break;
         case 40: pendulum.theta -= 0.1; break;
-        case 65: ; break;
-        case 68: ; break;
-        case 70: ; break;
-        case 83: ; break;
+        case 65: pendulum.p_r -= 30; break;
+        case 68: pendulum.p_r += 30; break;
+        case 87: pendulum.p_theta += 1000; break;
+        case 83: pendulum.p_theta -= 1000; break;
       }
     }
   } else {

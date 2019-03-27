@@ -16,7 +16,8 @@ phi = varsol(:,3);
 
 [x,y,z] = sph2cart(phi, theta ,rho);
 %cart = [x, y, z, rho.*sin(theta + pi/2).*cos(phi),  rho.*sin(phi), -rho.*cos(theta + pi/2).*cos(phi)];
-cart = [x, y, z, rho.*sin(theta).*cos(phi),  rho.*sin(phi), rho.*cos(theta).*cos(phi)];
+cart = [x, y, z, rho.*sin(theta1).*cos(phi),  rho.*cos(theta1), -rho.*sin(theta1).*sin(phi)];
+%cart = [x, y, z, rho.*sin(theta).*cos(phi),  rho.*sin(phi), rho.*cos(theta).*cos(phi)];
 plot3(x, y, z);
 %{
 figure(1)
