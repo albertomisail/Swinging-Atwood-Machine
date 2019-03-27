@@ -70,9 +70,9 @@ def simulate(ratio):
     ax = plt.subplot(111, projection='polar')
     ax.set_theta_zero_location("S")
     ax.plot(variables[:,2], variables[:,0], color='b', linewidth=1)
-    # plt.title('$SAM$ for $\mu = %.3f$, $r_0 = %.3f$, $\\theta_0 = %.3f^\degree$, $t_{max} = %.2f$' % (mu, r0, theta0 * 180 / pi, maxtime), y = 1.06)
-    ax.grid(True)
+    plt.title('$\mu = %.3f$, $r_0 = %.3f$, $\\theta_0 = %.3f^\degree$' % (mu, r0, -theta0 * 180 / pi), y = 1.06)
     plt.axis('off')
+    ax.grid(True)
     if(flag == False):
         print('Calculation was successful for mu = %.3f.' % mu)
         savePath = os.getcwd() + r'\images\mu' + str(int(ratio)) + '.png'
