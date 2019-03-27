@@ -80,7 +80,7 @@ function positionCamera(){
 function setupSliders(){
   g_slider = createSlider(0, 20, pendulum.g, 0.01);
   m_slider = createSlider(0, 10, pendulum.m, 0.01);
-  M_slider = createSlider(0, 20, pendulum.M, 0.01);
+  M_slider = createSlider(0, 20, pendulum.M, 0.001);
   b_slider = createSlider(0, 10, pendulum.b, 0.01);
   g_text = createSpan("");
   M_text = createSpan("");
@@ -161,6 +161,7 @@ function toggleSketch() {
 
 let counter = 0;
 function draw() {
+  if(true){
   background(175);
 
   drawSliders();
@@ -171,7 +172,9 @@ function draw() {
 
   initialPositioning();
   calculateNewPosition();
+  console.log(counter);
   drawTransition();
+  counter++;}
 }
 
 function drawSliders(){
