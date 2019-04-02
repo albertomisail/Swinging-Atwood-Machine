@@ -35,6 +35,13 @@ let key_queue;
 let pendulum;
 let reset_values;
 
+let woodtexture;
+
+function preload() {
+  woodtexture = loadImage("woodball.png");
+  //woodtexture = loadImage("back.jpg");
+}
+
 function setup() {
   createCanvas(800, 600, WEBGL);
   pixelDensity(1);
@@ -94,6 +101,11 @@ function setupSliders(){
   M_text.html("M: ");
   g_text.html("gravity: ");
   b_text.html("damping: ");
+
+  m_text.addClass("rangelabel");
+  M_text.addClass("rangelabel");
+  g_text.addClass("rangelabel");
+  b_text.addClass("rangelabel");
 
   g_box = createInput();
   m_box = createInput();
@@ -167,6 +179,7 @@ function setupSliders(){
 
   message_text = createSpan();
   message_text.html("Arrow keys alter position, asdw alters velocity");
+  message_text.class("rangelabel");
   message_text.position(g_slider.x+g_slider.width+10, g_slider.y-15);
 }
 
@@ -206,7 +219,7 @@ function loadToSliders() {
 let counter = 0;
 function draw() {
   if(true){
-  background(175);
+  background(20);
 
   drawSliders();
   stroke(0);
@@ -214,11 +227,41 @@ function draw() {
 
   positionCamera();
 
+  ambientLight(100, 100, 100);
+  pointLight(250, 250, 250, 1000, 1000, 100);
+
+  push();
+  ambientMaterial(color(204, 42, 0));
+  noStroke();
+  translate(-130, 0, -170);
+  box(200, 100, 20);
+  pop();
+
   initialPositioning();
   calculateNewPosition();
   // console.log(counter);
   drawTransition();
-  counter++;}
+  counter++;
+  }
+  push();
+  translate(-49, 0, -85);
+  rotateZ(PI/2);
+  rotateX(2*PI/3);
+  noStroke();
+  ambientMaterial(color(204, 42, 0));
+  cone(10, 198);
+  pop();
+
+  push();
+  translate(-201, 0, -85);
+  rotateZ(PI/2);
+  rotateX(PI/3);
+  noStroke();
+  ambientMaterial(color(204, 42, 0));
+  cone(10, 198);
+  pop();
+
+  stroke(color(0,0,0));
 }
 
 function drawSliders(){
@@ -276,10 +319,33 @@ function calculateNewPosition(){
   }
 
   push();
-  fill(200);
   stroke(color(200, 0, 0));
+  beginShape(POINTS);
+  noFill();
+  vertex(pendulum.x(), pendulum.y(), pendulum.z());
+  vertex(0, 0, 0);
+  vertex(-250, 0, 0);
+  let bigz = -pendulum.len + pendulum.r + 250;
+  if(bigz > 0) {
+    bigz = 0;
+  }
+  vertex(-250, 0, bigz);
+  endShape();
+  pop();
+
+  push();
+  translate(-250, 0, bigz);
+  noStroke();
+  ambientMaterial(color(210, 180, 140));
+  sphere(4*pendulum.M);
+  pop();
+
+  //texture(woodtexture);
+  push();
+  noStroke();
+  ambientMaterial(color(210, 180, 140));
   translate(pendulum.x(), pendulum.y(), pendulum.z());
-  sphere(5);
+  sphere(6*pendulum.m);
   pop();
 
   push();
@@ -297,6 +363,7 @@ function calculateNewPosition(){
 
 function drawTransition(){
   beginShape(POINTS);
+  stroke(color(160, 160, 150));
   pendulum.prev.runOn(function(q) {
     vertex(q[0], q[1], q[2]);
   });

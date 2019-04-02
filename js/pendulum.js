@@ -15,6 +15,8 @@ class Pendulum{
     this.p_theta = 0;
     this.p_phi = 0.00;
 
+    this.len = 550;
+
     this.iter_frame = 500;
 
     this.prev = new Queue();
