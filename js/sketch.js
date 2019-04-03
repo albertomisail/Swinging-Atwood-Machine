@@ -96,12 +96,13 @@ function setupSliders(){
   M_text.html("M: ");
   g_text.html("gravity: ");
   b_text.html("damping: ");
-  b_text.html("forcing: ");
+  f_text.html("forcing: ");
 
   m_text.addClass("rangelabel");
   M_text.addClass("rangelabel");
   g_text.addClass("rangelabel");
   b_text.addClass("rangelabel");
+  f_text.addClass("rangelabel");
 
   g_box = createInput();
   m_box = createInput();
