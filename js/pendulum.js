@@ -5,6 +5,7 @@ class Pendulum{
     this.m = 1;
     this.g = 9.81;
     this.b = 0;
+    this.f = 0;
     this.dt = 0.001;
 
     // variables

@@ -11,9 +11,9 @@ let prev;
 let cam_pos, cam_up, cam_right;
 
 // buttons, text
-let g_text, m_text, M_text, b_text;
-let g_box, m_box, M_box, b_box;
-let g_enter, m_enter, M_enter, b_enter;
+let g_text, m_text, M_text, b_text, f_text;
+let g_box, m_box, M_box, b_box, f_box;
+let g_enter, m_enter, M_enter, b_enter, f_enter;
 let text_size = 12;
 let start_button, reset_button;
 
@@ -35,15 +35,8 @@ let key_queue;
 let pendulum;
 let reset_values;
 
-let woodtexture;
-
-function preload() {
-  woodtexture = loadImage("woodball.png");
-  //woodtexture = loadImage("back.jpg");
-}
-
 function setup() {
-  createCanvas(800, 600, WEBGL);
+  createCanvas(windowWidth, windowHeight, WEBGL);
   pixelDensity(1);
 
   pg = createGraphics(800, 600);
@@ -91,16 +84,19 @@ function setupSliders(){
   m_slider = createSlider(0, 10, pendulum.m, 0.01);
   M_slider = createSlider(0, 20, pendulum.M, 0.001);
   b_slider = createSlider(0, 10, pendulum.b, 0.01);
+  f_slider = createSlider(0, 10, pendulum.f, 0.01);
 
   g_text = createSpan("");
   M_text = createSpan("");
   m_text = createSpan("");
   b_text = createSpan("");
+  f_text = createSpan("");
 
   m_text.html("m: ");
   M_text.html("M: ");
   g_text.html("gravity: ");
   b_text.html("damping: ");
+  b_text.html("forcing: ");
 
   m_text.addClass("rangelabel");
   M_text.addClass("rangelabel");
@@ -111,16 +107,19 @@ function setupSliders(){
   m_box = createInput();
   M_box = createInput();
   b_box = createInput();
+  f_box = createInput();
 
   g_box.value(pendulum.g);
   m_box.value(pendulum.m);
   M_box.value(pendulum.M);
   b_box.value(pendulum.b);
+  f_box.value(pendulum.f);
 
   g_box.size(40, g_text.height);
   m_box.size(40, g_text.height);
   M_box.size(40, g_text.height);
   b_box.size(40, g_text.height);
+  f_box.size(40, g_text.height);
 
   g_text.position(15, 15);
   g_box.position(90, g_text.y);
@@ -138,10 +137,15 @@ function setupSliders(){
   b_box.position(90, b_text.y);
   b_slider.position(M_slider.x, b_text.y + b_text.height + 10);
 
+  f_text.position(b_slider.x, b_slider.y + b_slider.height + 10 );
+  f_box.position(90, f_text.y);
+  f_slider.position(b_slider.x, f_text.y + f_text.height + 10);
+
   m_enter = false;
   M_enter = false;
   g_enter = false;
   b_enter = false;
+  f_enter = false;
 
   m_box.elt.addEventListener("keydown", function(e) {
     if(e.key === "Enter") {
@@ -163,13 +167,19 @@ function setupSliders(){
       b_enter = true;
     }
   });
+  f_box.elt.addEventListener("keydown", function(e) {
+    if(e.key === "Enter") {
+      f_enter = true;
+    }
+  });
+
 
   sliderX = M_slider.x+m_slider.width+100;
-  sliderY = b_slider.y + b_slider.height+10;
+  sliderY = f_slider.y + f_slider.height+10;
 
   start_button = createButton();
   start_button.html("start");
-  start_button.position(M_slider.x, b_slider.y+b_slider.height+10);
+  start_button.position(M_slider.x, f_slider.y+f_slider.height+10);
   start_button.mousePressed(toggleSketch);
 
   reset_button = createButton();
@@ -209,11 +219,13 @@ function loadToSliders() {
   m_slider.value(pendulum.m);
   M_slider.value(pendulum.M);
   b_slider.value(pendulum.b);
+  f_slider.value(pendulum.f);
 
   g_box.value(pendulum.g);
   m_box.value(pendulum.m);
   M_box.value(pendulum.M);
   b_box.value(pendulum.b);
+  f_box.value(pendulum.f);
 }
 
 let counter = 0;
@@ -295,10 +307,19 @@ function drawSliders(){
     b_enter = false;
     pendulum.b = parseFloat(b_box.value());
   }
+
+  if(f_slider.value() != pendulum.f) {
+    pendulum.f = f_slider.value();
+  } else if((f_box.value() != pendulum.f && f_box.elt !== document.activeElement) || f_enter) {
+    f_enter = false;
+    pendulum.f = parseFloat(f_box.value());
+  }
+
   m_slider.value(pendulum.m);
   M_slider.value(pendulum.M);
   g_slider.value(pendulum.g);
   b_slider.value(pendulum.b);
+  f_slider.value(pendulum.f);
   if(m_box.elt !== document.activeElement) {
     m_box.value(pendulum.m);
   }
@@ -310,6 +331,9 @@ function drawSliders(){
   }
   if(b_box.elt !== document.activeElement) {
     b_box.value(pendulum.b);
+  }
+  if(f_box.elt !== document.activeElement) {
+    f_box.value(pendulum.f);
   }
 }
 
