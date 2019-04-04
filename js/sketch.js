@@ -195,7 +195,7 @@ function setupSliders(){
 
 
   sliderX = M_slider.x+m_slider.width+100;
-  sliderY = f_slider.y + f_slider.height+10;
+  sliderY = l_slider.y + l_slider.height+10;
 
   start_button = createButton();
   start_button.html("start");
@@ -341,7 +341,7 @@ function drawSliders(){
     pendulum.p_phi = l_slider.value();
   } else if((l_box.value() != pendulum.p_phi && l_box.elt !== document.activeElement) || l_enter) {
     l_enter = false;
-    pendulum.l = parseFloat(l_box.value());
+    pendulum.p_phi = parseFloat(l_box.value());
   }
 
   m_slider.value(pendulum.m);
