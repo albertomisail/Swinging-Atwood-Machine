@@ -240,14 +240,14 @@ function loadToSliders() {
   M_slider.value(pendulum.M);
   b_slider.value(pendulum.b);
   f_slider.value(pendulum.f);
-  l_slider.value(pendulum.phi);
+  l_slider.value(pendulum.p_phi);
 
   g_box.value(pendulum.g);
   m_box.value(pendulum.m);
   M_box.value(pendulum.M);
   b_box.value(pendulum.b);
   f_box.value(pendulum.f);
-  l_box.value(pendulum.phi);
+  l_box.value(pendulum.p_phi);
 }
 
 let counter = 0;
