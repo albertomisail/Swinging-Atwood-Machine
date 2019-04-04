@@ -1,12 +1,14 @@
 class Pendulum{
   constructor(){
     // constants
-    this.M = 10;
+    this.M = 3;
     this.m = 1;
     this.g = 9.81;
     this.b = 0;
     this.f = 0;
     this.dt = 0.001;
+
+    this.counter = 0;
 
     // variables
     this.r = 200;
@@ -14,7 +16,7 @@ class Pendulum{
     this.phi = PI / 2;
     this.p_r = 0;
     this.p_theta = 0;
-    this.p_phi = 0.00;
+    this.p_phi = 0.001;
 
     this.len = 550;
 
@@ -57,7 +59,8 @@ class Pendulum{
           let e_j = this.dt * (p_theta_aux * p_theta_aux / (this.m * r_aux * r_aux * r_aux)
                                 - this.M * this.g + this.m * this.g * cos(theta_aux)
                                 + p_phi_aux * p_phi_aux / (this.m * r_aux * r_aux * r_aux * sin(theta_aux) * sin(theta_aux))
-                                - this.b * p_r_aux / (this.m + this.M)); // drag term
+                                - this.b * p_r_aux / (this.m + this.M)
+                                + this.f * 100000 * sin(this.counter)); // drag term
           prev_e = e_j;
           e_arr.push(e_j);
 
@@ -84,6 +87,8 @@ class Pendulum{
         this.p_theta += (f_arr[0] + 2 * f_arr[1] + 2 * f_arr[2] + f_arr[3]) / 6;
         this.phi += (g_arr[0] + 2 * g_arr[1] + 2 * g_arr[2] + g_arr[3]) / 6;
         this.p_phi += (h_arr[0] + 2 * h_arr[1] + 2 * h_arr[2] + h_arr[3]) / 6;
+
+        this.counter += 1;
     }
   }
 
@@ -133,8 +138,6 @@ class Pendulum{
     res.push(x);
     res.push(y);
     res.push(z);
-
-    console.log(this.r);
 
     this.prev.push(res);
   }

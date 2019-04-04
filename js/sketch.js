@@ -5,6 +5,7 @@ let g_slider;
 let m_slider;
 let M_slider;
 let b_slider;
+let f_slider;
 
 let prev;
 
@@ -84,7 +85,7 @@ function setupSliders(){
   m_slider = createSlider(0, 10, pendulum.m, 0.01);
   M_slider = createSlider(0, 20, pendulum.M, 0.001);
   b_slider = createSlider(0, 10, pendulum.b, 0.01);
-  f_slider = createSlider(0, 10, pendulum.f, 0.01);
+  f_slider = createSlider(0, 3, pendulum.f, 0.01);
 
   g_text = createSpan("");
   M_text = createSpan("");
