@@ -87,7 +87,7 @@ function setupSliders(){
   M_slider = createSlider(0, 20, pendulum.M, 0.001);
   b_slider = createSlider(0, 10, pendulum.b, 0.01);
   f_slider = createSlider(0, 3, pendulum.f, 0.01);
-  l_slider = createSlider(0, 0.001, pendulum.p_phi, 0.0001);
+  l_slider = createSlider(0, 0.001, pendulum.p_phi, 0);
 
   g_text = createSpan("");
   M_text = createSpan("");

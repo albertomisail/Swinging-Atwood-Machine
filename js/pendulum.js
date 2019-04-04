@@ -16,7 +16,7 @@ class Pendulum{
     this.phi = PI / 2;
     this.p_r = 0;
     this.p_theta = 0;
-    this.p_phi = 0.0005;
+    this.p_phi = 0;
 
     this.len = 550;
 
